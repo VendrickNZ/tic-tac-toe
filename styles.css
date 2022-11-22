@@ -42,4 +42,14 @@ a {
     height: 100px;
     text-align: center;
     border: 2px solid red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 64px;
+}
+
+.markers button {
+    padding: 15px;
+    margin: 15px;
+
 }

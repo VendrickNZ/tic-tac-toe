@@ -57,3 +57,12 @@ a {
 .disabled{
     pointer-events: none;
 }
+
+.difficulty {
+    display: flex;
+    justify-content: center;
+}
+
+#restartBtn {
+    margin-top: 25px;
+}

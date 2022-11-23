@@ -13,17 +13,26 @@ function setComputerMove(computersMarker, markerLocation) {
 const gameBoard = (() => {
     let board = Array(9)    
     const gameBoardUI = document.querySelector('.game-board');
+    const restart = document.getElementById("restartBtn");
+
+    restart.addEventListener('click', () => {
+        const gameBoardItems = document.querySelector(".game-board").children;
+        const gameBoardItemsArray = [...gameBoardItems]; 
+        gameBoardItemsArray.forEach((item) => item.textContent = '');
+        gameBoardItemsArray.forEach((item) => item.classList.remove('disabled'));
+        gameBoard.board = Array(9);
+    })
     for (let i = 0; i < 9; i++) {
         let gameGrid = document.createElement('button');
         gameGrid.setAttribute("index", i)
         gameGrid.classList = "game-grid-object";
-        
         gameGrid.addEventListener('click', () => {
+            gameGrid.classList.add('disabled');
             setPlayerMove(gameGrid);
             computersMove();
-            isWinner();
-            checkIfDraw();
-            gameGrid.classList.add('disabled');
+            if (checkIfWinner() || checkIfDraw()) {
+                gameRestart();
+            }
         })
         gameBoardUI.appendChild(gameGrid);
     }
@@ -31,20 +40,20 @@ const gameBoard = (() => {
 })();
 
 function gameRestart() {
-    const restart = document.getElementById("restartBtn");
     const gameBoardItems = document.querySelector(".game-board").children;
     const gameBoardItemsArray = [...gameBoardItems]; 
-    gameBoardItemsArray.forEach((item) => item.textContent = '');
-    gameBoardItemsArray.forEach((item) => item.classList.remove('disabled'));
     gameBoard.board = Array(9);
-    restart.addEventListener('click', () => {
-        gameBoardItemsArray.forEach((item) => item.textContent = '');
-        gameBoardItemsArray.forEach((item) => item.classList.remove('disabled'));
-        gameBoard.board = Array(9);
-    })
+    for (let i = 0; i < gameBoardItemsArray.length; i++) {
+        gameBoardItemsArray[i].classList.remove('disabled');
+        gameBoardItemsArray[i].textContent = ''
+    }
 };
 
 function computersMove() {
+    const difficulty = document.querySelector(".dropdown-menu");
+    difficulty.addEventListener('change', () => {
+        console.log('hi');
+    })
     let computersMarker = "O";
     markerLocation = randomMove();
     setComputerMove(computersMarker, markerLocation)
@@ -52,16 +61,20 @@ function computersMove() {
 
 //shuffle the board array, choose first empty space
 function randomMove() {
+    if (checkIfWinner()) {
+        gameRestart();
+        return;
+    }
+    else if (checkIfDraw()) {
+        gameRestart();
+        return;
+    }
     notFoundSpace = false;
     thisBoard = gameBoard.board;
     while (!notFoundSpace) {
         let randomNumber = getRandomInt(9);
         if (gameBoard.board[randomNumber] == null) {
             return randomNumber;
-        }
-        if (checkIfDraw()) {
-            gameRestart();
-            return;
         }
     }
 }
@@ -70,7 +83,7 @@ function getRandomInt(n) {
     return Math.floor(Math.random() * n);
 }
 
-function isWinner() {
+function checkIfWinner() {
     board = gameBoard.board;
 
     winningCombinations = [
@@ -99,26 +112,25 @@ function isWinner() {
     for (let i = 0; i < winningCombinations.length; i++) {
         if (winningCombinations[i].every(val => currentCrossPlacements.includes(val))) {
             alert("You win!");
-            gameRestart();
-            return
+            // gameRestart();
+            return true;
         }
     }
 
     for (let i = 0; i < winningCombinations.length; i++) {
         if (winningCombinations[i].every(val => currentNoughtPlacements.includes(val))){
             alert("You lose!");
-            gameRestart();
-            return
+            // gameRestart();
+            return true;
         }
     }
-    checkIfDraw();
-    return;
+    return checkIfDraw();
 }
 
 function checkIfDraw() {
     if (!(Object.values(gameBoard.board).length !== gameBoard.board.length)) {
         alert("Draw!")
-        gameRestart();
+        // gameRestart();
         return true;
         
     }

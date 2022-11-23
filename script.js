@@ -21,6 +21,7 @@ const gameBoard = (() => {
             computersMove();
             isWinner();
             checkIfDraw();
+            gameGrid.classList.add('disabled');
         })
         gameBoardUI.appendChild(gameGrid);
     }
@@ -34,6 +35,7 @@ function gameRestart() {
     const gameBoardItemsArray = [...gameBoardItems]; 
     restart.addEventListener('click', () => {
         gameBoardItemsArray.forEach((item) => item.textContent = '');
+        gameBoardItemsArray.forEach((item) => item.classList.remove('disabled'));
         gameBoard.board = Array(9);
     })
 };

@@ -1,12 +1,6 @@
-function setPlayerMove(playersMarker, noughts, crosses, gameGrid) {
-    if (playersMarker == "X") {
-        noughts.style.visibility = 'hidden';
-    } else {
-        crosses.style.visibility = 'hidden';
-    }
-    gameGrid.innerText = playersMarker;
-    gameBoard.board[gameGrid.getAttribute("index")] = playersMarker;
-    // console.log(gameBoard.board);
+function setPlayerMove(gameGrid) {
+    gameGrid.innerText = "X";
+    gameBoard.board[gameGrid.getAttribute("index")] = "X";
 }
 
 function setComputerMove(computersMarker, markerLocation) {
@@ -15,34 +9,23 @@ function setComputerMove(computersMarker, markerLocation) {
 }
 
 const gameBoard = (() => {
-    let board = Array(9)
-    let playersMarker = "X";
-    
-    const crosses = document.getElementById('X');
-    crosses.addEventListener('click', () => {
-        playersMarker = "X";
-        crosses.style.backgroundColor = "blue";
-    })
-    const noughts = document.getElementById('O');
-    noughts.addEventListener('click', () => {
-        playersMarker = "O";
-        noughts.style.backgroundColor = "yellow";
-    })
+    let board = Array(9)    
     const gameBoardUI = document.querySelector('.game-board');
-    
     for (let i = 0; i < 9; i++) {
         let gameGrid = document.createElement('button');
         gameGrid.setAttribute("index", i)
         gameGrid.classList = "game-grid-object";
         
         gameGrid.addEventListener('click', () => {
-            setPlayerMove(playersMarker, noughts, crosses, gameGrid);
-            computersMove(gameGrid);
+            setPlayerMove(gameGrid);
+            computersMove();
+            isWinner();
+            checkIfDraw();
         })
         gameBoardUI.appendChild(gameGrid);
     }
     gameRestart();
-    return {board, playersMarker, noughts, crosses};
+    return {board};
 })();
 
 function gameRestart() {
@@ -55,22 +38,24 @@ function gameRestart() {
     })
 };
 
-function computersMove(gameGrid) {
-    let computersMarker;
-    gameBoard.playersMarker == "X" ? computersMarker = "O" : computersMarker = "X";
-    markerLocation = randomMove(computersMarker);
-    console.log(markerLocation);
+function computersMove() {
+    let computersMarker = "O";
+    markerLocation = randomMove();
     setComputerMove(computersMarker, markerLocation)
 }
 
 //shuffle the board array, choose first empty space
-function randomMove(computersMarker) {
+function randomMove() {
     notFoundSpace = false;
     thisBoard = gameBoard.board;
     while (!notFoundSpace) {
         let randomNumber = getRandomInt(9);
         if (gameBoard.board[randomNumber] == null) {
             return randomNumber;
+        }
+        if (checkIfDraw()) {
+            gameRestart();
+            return;
         }
     }
 }
@@ -79,13 +64,68 @@ function getRandomInt(n) {
     return Math.floor(Math.random() * n);
 }
 
-const Player = (() => {
-    //functions
+function isWinner() {
+    board = gameBoard.board;
+
+    winningCombinations = [
+    [board[0], board[1], board[2]],
+    [board[3], board[4], board[5]],
+    [board[6], board[7], board[8]],
+    [board[0], board[3], board[6]],
+    [board[1], board[4], board[7]],
+    [board[2], board[5], board[8]],
+    [board[0], board[4], board[8]],
+    [board[2], board[4], board[6]]
+    ]
+
+    maybeWinningCombinations = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+    ]
+
+    currentNoughtPlacements = [];
+    currentCrossPlacements = [];
     
-
-
-    //return all of them
-    return {
-
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] == "X") {
+            currentCrossPlacements.push(i)
+        } if (board[i] == "O") {
+            currentNoughtPlacements.push(i)
+        }
     }
-});
+
+    //console.log(currentNoughtPlacements, currentCrossPlacements);
+    for (let i = 0; i < maybeWinningCombinations.length; i++) {
+        if (maybeWinningCombinations[i].every(val => currentCrossPlacements.includes(val))) {
+            alert("You win!");
+            gameRestart();
+            return
+        }
+    }
+
+    for (let i = 0; i < maybeWinningCombinations.length; i++) {
+        if (maybeWinningCombinations[i].every(val => currentNoughtPlacements.includes(val))){
+            alert("You lose!");
+            gameRestart();
+            return
+        }
+    }
+    checkIfDraw();
+    return;
+}
+
+function checkIfDraw() {
+    if (!(Object.values(gameBoard.board).length !== gameBoard.board.length)) {
+        alert("Draw!")
+        gameRestart();
+        return true;
+        
+    }
+    return false;
+}

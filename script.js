@@ -50,9 +50,10 @@ function gameRestart() {
 };
 
 function computersMove() {
-    const difficulty = document.querySelector(".dropdown-menu");
+    const difficulty = document.getElementById("select");
+    const index = difficulty.selectedIndex;
     difficulty.addEventListener('change', () => {
-        console.log('hi');
+        const index = difficulty.selectedIndex;
     })
     let computersMarker = "O";
     markerLocation = randomMove();

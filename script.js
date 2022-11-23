@@ -5,6 +5,8 @@ function setPlayerMove(gameGrid) {
 
 function setComputerMove(computersMarker, markerLocation) {
     document.querySelector(`button[index="${markerLocation}"]`).innerText = computersMarker;
+    document.querySelector(`button[index="${markerLocation}"]`).classList.add('disabled');
+
     gameBoard.board[markerLocation] = computersMarker;
 }
 
@@ -25,7 +27,6 @@ const gameBoard = (() => {
         })
         gameBoardUI.appendChild(gameGrid);
     }
-    gameRestart();
     return {board};
 })();
 
@@ -33,6 +34,9 @@ function gameRestart() {
     const restart = document.getElementById("restartBtn");
     const gameBoardItems = document.querySelector(".game-board").children;
     const gameBoardItemsArray = [...gameBoardItems]; 
+    gameBoardItemsArray.forEach((item) => item.textContent = '');
+    gameBoardItemsArray.forEach((item) => item.classList.remove('disabled'));
+    gameBoard.board = Array(9);
     restart.addEventListener('click', () => {
         gameBoardItemsArray.forEach((item) => item.textContent = '');
         gameBoardItemsArray.forEach((item) => item.classList.remove('disabled'));
@@ -70,17 +74,6 @@ function isWinner() {
     board = gameBoard.board;
 
     winningCombinations = [
-    [board[0], board[1], board[2]],
-    [board[3], board[4], board[5]],
-    [board[6], board[7], board[8]],
-    [board[0], board[3], board[6]],
-    [board[1], board[4], board[7]],
-    [board[2], board[5], board[8]],
-    [board[0], board[4], board[8]],
-    [board[2], board[4], board[6]]
-    ]
-
-    maybeWinningCombinations = [
         [0, 1, 2],
         [3, 4, 5],
         [6, 7, 8],
@@ -103,16 +96,16 @@ function isWinner() {
     }
 
     //console.log(currentNoughtPlacements, currentCrossPlacements);
-    for (let i = 0; i < maybeWinningCombinations.length; i++) {
-        if (maybeWinningCombinations[i].every(val => currentCrossPlacements.includes(val))) {
+    for (let i = 0; i < winningCombinations.length; i++) {
+        if (winningCombinations[i].every(val => currentCrossPlacements.includes(val))) {
             alert("You win!");
             gameRestart();
             return
         }
     }
 
-    for (let i = 0; i < maybeWinningCombinations.length; i++) {
-        if (maybeWinningCombinations[i].every(val => currentNoughtPlacements.includes(val))){
+    for (let i = 0; i < winningCombinations.length; i++) {
+        if (winningCombinations[i].every(val => currentNoughtPlacements.includes(val))){
             alert("You lose!");
             gameRestart();
             return
@@ -131,3 +124,7 @@ function checkIfDraw() {
     }
     return false;
 }
+
+function minimax(board, depth, isMax) {
+
+};

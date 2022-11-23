@@ -1,8 +1,4 @@
-function changeBoard(board) {
-
-}
-
-function setMove(playersMarker, board, noughts, crosses, gameGrid) {
+function setPlayerMove(playersMarker, noughts, crosses, gameGrid) {
     if (playersMarker == "X") {
         noughts.style.visibility = 'hidden';
     } else {
@@ -10,13 +6,18 @@ function setMove(playersMarker, board, noughts, crosses, gameGrid) {
     }
     gameGrid.innerText = playersMarker;
     gameBoard.board[gameGrid.getAttribute("index")] = playersMarker;
-    console.log(gameBoard.board);
+    // console.log(gameBoard.board);
+}
+
+function setComputerMove(computersMarker, markerLocation) {
+    document.querySelector(`button[index="${markerLocation}"]`).innerText = computersMarker;
+    gameBoard.board[markerLocation] = computersMarker;
 }
 
 const gameBoard = (() => {
     let board = Array(9)
-
-    playersMarker = "X";
+    let playersMarker = "X";
+    
     const crosses = document.getElementById('X');
     crosses.addEventListener('click', () => {
         playersMarker = "X";
@@ -35,12 +36,13 @@ const gameBoard = (() => {
         gameGrid.classList = "game-grid-object";
         
         gameGrid.addEventListener('click', () => {
-            setMove(playersMarker, board, noughts, crosses, gameGrid);
+            setPlayerMove(playersMarker, noughts, crosses, gameGrid);
+            computersMove(gameGrid);
         })
         gameBoardUI.appendChild(gameGrid);
     }
     gameRestart();
-    return {board};
+    return {board, playersMarker, noughts, crosses};
 })();
 
 function gameRestart() {
@@ -53,6 +55,29 @@ function gameRestart() {
     })
 };
 
+function computersMove(gameGrid) {
+    let computersMarker;
+    gameBoard.playersMarker == "X" ? computersMarker = "O" : computersMarker = "X";
+    markerLocation = randomMove(computersMarker);
+    console.log(markerLocation);
+    setComputerMove(computersMarker, markerLocation)
+}
+
+//shuffle the board array, choose first empty space
+function randomMove(computersMarker) {
+    notFoundSpace = false;
+    thisBoard = gameBoard.board;
+    while (!notFoundSpace) {
+        let randomNumber = getRandomInt(9);
+        if (gameBoard.board[randomNumber] == null) {
+            return randomNumber;
+        }
+    }
+}
+
+function getRandomInt(n) {
+    return Math.floor(Math.random() * n);
+}
 
 const Player = (() => {
     //functions

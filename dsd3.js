@@ -79,18 +79,19 @@ function computersMove() {
         markerLocation = randomMove() 
         setComputerMove(markerLocation)
     } else {
-        if (checkIfWinner()) {
-            gameRestart();
-            return;
-        }
-        else if (checkIfDraw()) {
-            gameRestart();
-            return;
-        }
-        [_, choice] = minimax(gameBoard.board, gameBoard.computersMarker)
-        console.log(_, choice);
-        if (choice != null) {
-            setComputerMove(choice)
+        // if (checkIfWinner()) {
+        //     console.log("computers move??");
+        //     gameRestart();
+        //     return;
+        // }
+        // else if (checkIfDraw()) {
+        //     gameRestart();
+        //     return;
+        // }
+        newBoard = gameBoard.board.slice(0);
+        markerLocation = minimax(newBoard, gameBoard.computersMarker)
+        if (markerLocation[1] != null) {
+            setComputerMove(markerLocation[1])
         }
     } 
 }
@@ -173,116 +174,142 @@ function checkIfDraw() {
     return false;
 }
 
+
+// ai
+function minimax(boardStates, player) {
+    // if (checkIfComputerWinning()) {
+    //     return [1, null];
+    // } else if (checkIfPlayerWinning()) {
+    //     return [-1, null];
+    // }
+    const winner = checkIfPlayerWinning();
+    if (winner == gameBoard.computersMarker) {
+        return [1, null];
+    } else if (winner == gameBoard.playersMarker) {
+        return [-1, null]
+    }
+    let move, moveScore;
+    if (player == gameBoard.computersMarker) {
+        [moveScore, move] = minimaxMaximize(boardStates);
+    } else {
+        [moveScore, move] = minimaxMinimize(boardStates);
+    }
+
+    if (move == null) {
+        moveScore = 0;
+    }
+    //console.log(moveScore, move, gameBoard.board);
+    return [moveScore, move];
+}
+
+function minimaxMaximize(boardStates) {
+    let moveScore = Number.NEGATIVE_INFINITY;
+    let move = null;
+    for (let x = 0; x < 9; x++) {
+            if (boardStates[x] == x) {
+                const newBoardStates = boardStates
+                newBoardStates[x] = gameBoard.computersMarker;
+                const [newMoveScore, _] = minimax(newBoardStates, gameBoard.playersMarker);
+
+                if (newMoveScore > moveScore) {
+                    move = [x];
+                    moveScore = newMoveScore;
+                }
+            }
+        }
+    return [moveScore, move]
+}
+
+function minimaxMinimize(boardStates) {
+    let moveScore = Number.POSITIVE_INFINITY;
+    let move = null;
+    for (let x = 0; x < 9; x++) {
+            if (boardStates[x] == x) {
+                const newBoardStates = boardStates;
+                newBoardStates[x] = gameBoard.playersMarker;
+                const [newMoveScore, _] = minimax(newBoardStates, gameBoard.computersMarker);
+
+                if (newMoveScore < moveScore) {
+                    move = [x];
+                    moveScore = newMoveScore;
+                }
+            }
+        }
+    return [moveScore, move]
+}
+
+
+//dont look at me resuing code ahhh, tic tac toe is too painful
+function checkIfPlayerWinning() {
+    board = gameBoard.board;
+    winningCombinations = winningPositions.winningCombinations;
+    console.log(board);
+    
+    for (const possibleState of winningCombinations) {
+        let currentPlayer = null;
+        let isWinner = true;
+        for (const x of possibleState) {
+            const occupant = board[x];
+            if (currentPlayer == null && occupant != " ") {
+                currentPlayer = occupant;
+            } else if (currentPlayer != occupant){
+                isWinner = false;
+            }
+        }
+        if (isWinner) {
+            return currentPlayer;
+        }
+    }
+
+    let hasMoves = false;
+    for (let x = 0; x < 9; x++) {
+        if (board[x] == " ") {
+            hasMoves = true;
+        }
+    }
+
+    if (!hasMoves) {
+        checkIfDraw();
+    }
+
+    return null;
+    // currentCrossPlacements = [];
+    
+    // for (let i = 0; i < board.length; i++) {
+    //     if (board[i] == "X") {
+    //         currentCrossPlacements.push(i)
+    //     }
+    // }
+
+    // for (let i = 0; i < winningCombinations.length; i++) {
+    //     if (winningCombinations[i].every(val => currentCrossPlacements.includes(val))) {
+    //         return true;
+    //     }
+    // }
+    // return false;
+}
+
+//dont look at me resuing code ahhh, tic tac toe is too painful
+function checkIfComputerWinning() {
+    board = gameBoard.board;
+    winningCombinations = winningPositions.winningCombinations;
+    
+    currentNoughtPlacements = [];
+    
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] == "O") {
+            currentNoughtPlacements.push(i)
+        }
+    }
+
+    for (let i = 0; i < winningCombinations.length; i++) {
+        if (winningCombinations[i].every(val => currentNoughtPlacements.includes(val))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function emptyIndices(){
     return gameBoard.board.filter(s => s != "O" && s != "X");
 }
-
-//ai
-
-// function evaluateBoard(boardPosition) {
-//     newBoardPosition = []
-//     while (boardPosition.length) {
-//         newBoardPosition.push(boardPosition.splice(0, 3))
-//     }
-
-//     const winningStates = [[[0, 0], [0, 1], [0, 2]],
-//     [[1, 0], [1, 1], [1, 2]],
-//     [[2, 0], [2, 1], [2, 2]],
-//     [[0, 0], [1, 0], [2, 0]],
-//     [[0, 1], [1, 1], [2, 1]],
-//     [[0, 2], [1, 2], [2, 2]],
-
-//     // Diagonals
-//     [[0, 0], [1, 1], [2, 2]],
-//     [[2, 0], [1, 1], [0, 2]],
-//     ];
-
-//     for (const possibleState of winningStates) {
-//         let currentPlayer = null;
-//         let isWinner = true;
-
-//         for (const [x, y] of possibleState) {
-//             const occupant = newBoardPosition[x][y];
-//             if (currentPlayer == null && occupant != " ") {
-//                 currentPlayer = occupant;
-//             } else if (currentPlayer != occupant) {
-//                 isWinner = false;
-//             }
-//         }
-//         if (isWinner) {
-//             return currentPlayer;
-//         }
-//     }
-//     let hasMoves = false;
-    
-//     if (emptyIndices().length > 0) {
-//         hasMoves = true;
-//     }
-
-//     if (!hasMoves) {
-//         return checkIfDraw();
-//     }
-
-//     return null;
-
-// }
-// function minimax(boardPosition, maximizingPlayer) {
-//     const winner = evaluateBoard(boardPosition);
-//     if (winner == gameBoard.computersMarker) {
-//         return [1, null]
-//     } else if (winner == gameBoard.playersMarker) {
-//         return [-1, null]
-//     }
-    
-//     let move, moveScore;
-//     if (maximizingPlayer == gameBoard.computersMarker) {
-//         [moveScore, move] = maximize(boardPosition);
-//     } else {
-//         [movescore, move] = minimize(boardPosition);
-//     }
-
-//     if (move == null) {
-//         moveScore = 0;
-//     }
-
-//     return [moveScore, move];
-// }
-
-// function maximize(boardPosition) {
-//     let moveScore = Number.NEGATIVE_INFINITY;
-//     let move = null;
-
-//     for (let x = 0; x < 9; x++) {
-//         if (boardPosition[x] == " ") {
-//             const newBoardPosition = boardPosition.slice(0);
-//             newBoardPosition[x] = gameBoard.computersMarker;
-//             const [newMoveScore, _] = minimax(newBoardPosition, gameBoard.playersMarker);
-
-//             if (newMoveScore > moveScore) {
-//                 move = x;
-//                 moveScore = newMoveScore;
-//             }
-//         }
-//     }
-//     return [moveScore, move];
-// }
-
-// function minimize(boardPosition) {
-//     let moveScore = Number.POSITIVE_INFINITY;
-//     let move = null;
-    
-//     for (let x = 0; x < 9; x++){
-//         if (boardPosition[x] == " ") {
-//             const newBoardPosition = boardPosition.slice(0);
-//             newBoardPosition[x] = gameBoard.playersMarker;
-//             const [newMoveScore, _] = minimax(newBoardPosition, gameBoard.computersMarker);
-
-//             if (newMoveScore < moveScore) {
-//                 move = x;
-//                 moveScore = newMoveScore;
-//             }
-//         }
-//     }
-
-//     return [moveScore, move];
-// }

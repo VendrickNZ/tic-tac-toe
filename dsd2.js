@@ -13,7 +13,7 @@ function setComputerMove(markerLocation) {
 const gameBoard = (() => {
     let board = [];
     for (let i = 0; i < 9; i++) {
-        board.push(" ");
+        board.push(i);
     }
     const gameBoardUI = document.querySelector('.game-board');
     const restart = document.getElementById("restartBtn");
@@ -62,7 +62,7 @@ function gameRestart() {
 function createNewBoard() {
     let board = [];
     for (let i = 0; i < 9; i++) {
-        board.push(" ");
+        board.push(i);
     }
     return board;
 }
@@ -75,9 +75,9 @@ function gameDifficulty() {
 
 function computersMove() {
     difficulty = gameDifficulty();
+    console.log(difficulty);
     if (difficulty === 0) { 
         markerLocation = randomMove() 
-        setComputerMove(markerLocation)
     } else {
         if (checkIfWinner()) {
             gameRestart();
@@ -87,12 +87,9 @@ function computersMove() {
             gameRestart();
             return;
         }
-        [_, choice] = minimax(gameBoard.board, gameBoard.computersMarker)
-        console.log(_, choice);
-        if (choice != null) {
-            setComputerMove(choice)
-        }
-    } 
+        markerLocation = minimax(gameBoard.board, gameBoard.playersMarker).index
+    }
+    setComputerMove(markerLocation)
 }
 
 //shuffle the board array, choose first empty space
@@ -173,116 +170,106 @@ function checkIfDraw() {
     return false;
 }
 
+
+// ai
+function minimax(newBoard) {
+    player = "X";
+    ai = "O";
+    
+    let availablePositions = emptyIndices(newBoard);
+    if (checkIfPlayerWinning()){
+        return {score:-10};
+    } else if (checkIfComputerWinning()) {
+        return {score:10};
+    } else if (availablePositions.length === 0) {
+        return {score:0};
+    }
+    let moves = [];
+
+    for (let i = 0; i < availablePositions.length; i++) {
+        let move = {};
+        move.index = newBoard[availablePositions[i]]
+        
+        newBoard[availablePositions[i]] = player;
+
+        if (player == ai) {
+            let result = minimax(newBoard, player);
+            move.score = result.score;
+        } else {
+            let result = minimax(newBoard, ai);
+            move.score = result.score;
+        }
+
+        newBoard[availablePositions[i]] = move.index;
+
+        moves.push(move);
+    }
+
+    let bestMove;
+    if (player === ai) {
+        let bestScore = -10000;
+        for (let i = 0; i < moves.length; i++) {
+            if (moves[i].score > bestScore) {
+                bestScore = moves[i].score;
+                bestMove = i;
+            } 
+        }
+    } else {
+        let bestScore = 10000;
+        for (let i = 0; i < moves.length; i++) {
+            if (moves[i].score < bestScore) {
+                bestScore = moves[i].score;
+                bestMove = i;
+            }
+    
+        }
+    }
+    return moves[bestMove];
+};
+
+
+//dont look at me resuing code ahhh, tic tac toe is too painful
+function checkIfPlayerWinning() {
+    board = gameBoard.board;
+    winningCombinations = winningPositions.winningCombinations;
+    
+    currentCrossPlacements = [];
+    
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] == "X") {
+            currentCrossPlacements.push(i)
+        }
+    }
+
+    for (let i = 0; i < winningCombinations.length; i++) {
+        if (winningCombinations[i].every(val => currentCrossPlacements.includes(val))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//dont look at me resuing code ahhh, tic tac toe is too painful
+function checkIfComputerWinning() {
+    board = gameBoard.board;
+    winningCombinations = winningPositions.winningCombinations;
+    
+    currentNoughtPlacements = [];
+    
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] == "O") {
+            currentNoughtPlacements.push(i)
+        }
+    }
+
+    for (let i = 0; i < winningCombinations.length; i++) {
+        if (winningCombinations[i].every(val => currentNoughtPlacements.includes(val))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function emptyIndices(){
     return gameBoard.board.filter(s => s != "O" && s != "X");
 }
-
-//ai
-
-// function evaluateBoard(boardPosition) {
-//     newBoardPosition = []
-//     while (boardPosition.length) {
-//         newBoardPosition.push(boardPosition.splice(0, 3))
-//     }
-
-//     const winningStates = [[[0, 0], [0, 1], [0, 2]],
-//     [[1, 0], [1, 1], [1, 2]],
-//     [[2, 0], [2, 1], [2, 2]],
-//     [[0, 0], [1, 0], [2, 0]],
-//     [[0, 1], [1, 1], [2, 1]],
-//     [[0, 2], [1, 2], [2, 2]],
-
-//     // Diagonals
-//     [[0, 0], [1, 1], [2, 2]],
-//     [[2, 0], [1, 1], [0, 2]],
-//     ];
-
-//     for (const possibleState of winningStates) {
-//         let currentPlayer = null;
-//         let isWinner = true;
-
-//         for (const [x, y] of possibleState) {
-//             const occupant = newBoardPosition[x][y];
-//             if (currentPlayer == null && occupant != " ") {
-//                 currentPlayer = occupant;
-//             } else if (currentPlayer != occupant) {
-//                 isWinner = false;
-//             }
-//         }
-//         if (isWinner) {
-//             return currentPlayer;
-//         }
-//     }
-//     let hasMoves = false;
-    
-//     if (emptyIndices().length > 0) {
-//         hasMoves = true;
-//     }
-
-//     if (!hasMoves) {
-//         return checkIfDraw();
-//     }
-
-//     return null;
-
-// }
-// function minimax(boardPosition, maximizingPlayer) {
-//     const winner = evaluateBoard(boardPosition);
-//     if (winner == gameBoard.computersMarker) {
-//         return [1, null]
-//     } else if (winner == gameBoard.playersMarker) {
-//         return [-1, null]
-//     }
-    
-//     let move, moveScore;
-//     if (maximizingPlayer == gameBoard.computersMarker) {
-//         [moveScore, move] = maximize(boardPosition);
-//     } else {
-//         [movescore, move] = minimize(boardPosition);
-//     }
-
-//     if (move == null) {
-//         moveScore = 0;
-//     }
-
-//     return [moveScore, move];
-// }
-
-// function maximize(boardPosition) {
-//     let moveScore = Number.NEGATIVE_INFINITY;
-//     let move = null;
-
-//     for (let x = 0; x < 9; x++) {
-//         if (boardPosition[x] == " ") {
-//             const newBoardPosition = boardPosition.slice(0);
-//             newBoardPosition[x] = gameBoard.computersMarker;
-//             const [newMoveScore, _] = minimax(newBoardPosition, gameBoard.playersMarker);
-
-//             if (newMoveScore > moveScore) {
-//                 move = x;
-//                 moveScore = newMoveScore;
-//             }
-//         }
-//     }
-//     return [moveScore, move];
-// }
-
-// function minimize(boardPosition) {
-//     let moveScore = Number.POSITIVE_INFINITY;
-//     let move = null;
-    
-//     for (let x = 0; x < 9; x++){
-//         if (boardPosition[x] == " ") {
-//             const newBoardPosition = boardPosition.slice(0);
-//             newBoardPosition[x] = gameBoard.playersMarker;
-//             const [newMoveScore, _] = minimax(newBoardPosition, gameBoard.computersMarker);
-
-//             if (newMoveScore < moveScore) {
-//                 move = x;
-//                 moveScore = newMoveScore;
-//             }
-//         }
-//     }
-
-//     return [moveScore, move];
-// }
